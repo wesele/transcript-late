@@ -37,7 +37,7 @@ _DEFAULTS = {
     "model": "LongCat-Flash-Lite",
     "source_lang": "English",
     "target_lang": "Chinese",
-    "stt_engine": "google",
+    "stt_engine": "nvidia-local",
     "vosk_model_size": "small",
     "whisper_key": "",
     "whisper_url": "https://api.openai.com/v1/",
@@ -46,7 +46,7 @@ _DEFAULTS = {
     "nvidia_key": "",
     "nvidia_server": "grpc.nvcf.nvidia.com:443",
     "nvidia_use_ssl": True,
-    "sensitivity": 5,
+    "sensitivity": 8,
     "new_transcript": False,
     "log_file": None,
 }
