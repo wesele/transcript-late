@@ -14,5 +14,6 @@
     "nvidia_server": "grpc.nvcf.nvidia.com:443",
     "nvidia_use_ssl": true,
     "sensitivity": 8,
-    "new_transcript": false
+    "new_transcript": false,
+    "merge_interval": 1.5
 }

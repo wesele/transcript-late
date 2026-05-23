@@ -1,6 +1,7 @@
 import sys
 import time
 import signal
+import threading
 from config import config
 from cli_ui import ConsoleUI
 from translator import TranslationWorker
@@ -16,6 +17,25 @@ def main():
 
     # Unique segment identifier to track incoming audio chunks
     segment_counter = 0
+
+    # Merge buffer for combining quick successive segments
+    merge_lock = threading.Lock()
+    merge_buffer = []
+    merge_timer = [None]
+
+    def flush_merge():
+        with merge_lock:
+            if not merge_buffer:
+                return
+            nonlocal segment_counter
+            combined = " ".join(merge_buffer)
+            merge_buffer.clear()
+            merge_timer[0] = None
+
+        ui.clear_hypothesis()
+        ui.print_original_segment(combined)
+        segment_counter += 1
+        translator.queue_translation(combined, segment_counter)
 
     # 3. Setup Translation background worker
     def on_translation_complete(original, translation, segment_id):
@@ -40,17 +60,22 @@ def main():
             ui.clear_hypothesis()
 
     def on_stt_recognition(final_text):
-        nonlocal segment_counter
         if not final_text.strip():
             return
-        
-        # Clear hypothesis line immediately upon finalization
+
+        interval = config.merge_interval
+        if interval > 0:
+            with merge_lock:
+                merge_buffer.append(final_text.strip())
+                if merge_timer[0]:
+                    merge_timer[0].cancel()
+                merge_timer[0] = threading.Timer(interval, flush_merge)
+                merge_timer[0].start()
+            return
+
+        nonlocal segment_counter
         ui.clear_hypothesis()
-        
-        # 1. IMMEDIATELY print original text on screen to achieve instant response
         ui.print_original_segment(final_text)
-        
-        # 2. Queue translation to the background worker thread
         segment_counter += 1
         translator.queue_translation(final_text, segment_counter)
 
@@ -66,16 +91,22 @@ def main():
 
     # 5. Handle graceful shutdown (Ctrl+C)
     def shutdown_handler(signum, frame):
-        print("\n") # Line break
+        print("\n")
         ui.clear_hypothesis()
-        sys.stdout.write("\r") # Reset carriage
+        sys.stdout.write("\r")
         ui.console.print("[bold yellow]⏳ Stopping RTA engines gracefully...[/bold yellow]")
-        
+
+        # Flush any pending merged segments
+        if merge_timer[0]:
+            merge_timer[0].cancel()
+            merge_timer[0] = None
+        flush_merge()
+
         # Stop background engines
         speech_engine.stop()
         translator.stop()
-        
-        ui.console.print(f"[bold green]✔ Engines stopped. Transcript saved to [underline]{config.log_file}[/underline][/bold green]")
+
+        ui.console.print(f"[bold green]✔ Engines stopped. Transcript saved to [underline]{ui._get_log_path()}[/underline][/bold green]")
         ui.console.print("[bold cyan]👋 Thank you for using RTA! Goodbye.[/bold cyan]")
         sys.exit(0)
 

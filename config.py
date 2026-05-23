@@ -48,6 +48,7 @@ _DEFAULTS = {
     "nvidia_use_ssl": True,
     "sensitivity": 8,
     "new_transcript": False,
+    "merge_interval": 1.5,
     "log_file": None,
 }
 
@@ -97,6 +98,8 @@ class Config:
         parser.add_argument("--nvidia-server", type=str, default=self.nvidia_server)
         parser.add_argument("--nvidia-no-ssl", action="store_true")
         parser.add_argument("--sensitivity", type=int, default=self.sensitivity)
+        parser.add_argument("--merge-interval", type=float, default=self.merge_interval,
+                            help="Seconds to wait before flushing merged segments (0 = disabled)")
         parser.add_argument("-n", "--new", action="store_true", default=self.new_transcript,
                             help="Force new transcript file (add sequence number if today's file exists)")
         parser.add_argument("--log", type=str, default=None,
@@ -120,6 +123,7 @@ class Config:
         self.nvidia_use_ssl = not args.nvidia_no_ssl
         self.sensitivity = max(1, min(10, args.sensitivity))
         self.new_transcript = args.new
+        self.merge_interval = max(0.0, args.merge_interval)
         self.log_file = args.log
 
 
