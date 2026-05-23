@@ -44,6 +44,8 @@ class ConsoleUI:
         elif config.stt_engine == "nvidia":
             model_name = "Parakeet CTC zh-CN" if "chinese" in config.source_lang.lower() else "Parakeet CTC es"
             config_text.append(f"NVIDIA Riva {model_name} (Cloud/gRPC)\n", style="white")
+        elif config.stt_engine == "nvidia-local":
+            config_text.append("NVIDIA Parakeet TDT 0.6B (Local/HuggingFace)\n", style="white")
         else:
             config_text.append(f"Vosk Speech STT (100% Local/Offline - {config.vosk_model_size} model)\n", style="white")
         
@@ -60,7 +62,7 @@ class ConsoleUI:
         config_text.append(f"{self._get_log_path()}\n", style="white")
 
         config_text.append("🎛️  Sensitivity:    ", style="bold cyan")
-        if config.stt_engine in ["google", "whisper-api", "whisper-local", "nvidia"]:
+        if config.stt_engine in ["google", "whisper-api", "whisper-local", "nvidia", "nvidia-local"]:
             if config.sensitivity >= 5:
                 ratio = 1.5 - (config.sensitivity - 5) * 0.09
             else:
@@ -86,6 +88,8 @@ class ConsoleUI:
             self.console.print(f"[bold green]✔ Local offline Whisper ({config.whisper_local_size}) speech recognition activated successfully![/bold green]")
         elif config.stt_engine == "nvidia":
             self.console.print("[bold green]✔ NVIDIA Riva Parakeet CTC cloud speech recognition activated successfully![/bold green]")
+        elif config.stt_engine == "nvidia-local":
+            self.console.print("[bold green]✔ NVIDIA Parakeet TDT local speech recognition activated successfully![/bold green]")
         else:
             self.console.print(f"[bold green]✔ Local offline Vosk ({config.vosk_model_size}) speech recognition activated successfully![/bold green]")
         self.console.print("[bold yellow]🎙️  Listening... Speak into your microphone (Press Ctrl+C to exit)[/bold yellow]\n")
