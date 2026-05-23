@@ -47,7 +47,8 @@ _DEFAULTS = {
     "nvidia_server": "grpc.nvcf.nvidia.com:443",
     "nvidia_use_ssl": True,
     "sensitivity": 5,
-    "log_file": "transcript.md",
+    "new_transcript": False,
+    "log_file": None,
 }
 
 
@@ -96,7 +97,10 @@ class Config:
         parser.add_argument("--nvidia-server", type=str, default=self.nvidia_server)
         parser.add_argument("--nvidia-no-ssl", action="store_true")
         parser.add_argument("--sensitivity", type=int, default=self.sensitivity)
-        parser.add_argument("--log", type=str, default=self.log_file)
+        parser.add_argument("-n", "--new", action="store_true", default=self.new_transcript,
+                            help="Force new transcript file (add sequence number if today's file exists)")
+        parser.add_argument("--log", type=str, default=None,
+                            help="Manual transcript filename (overrides auto-naming)")
 
         args = parser.parse_args()
 
@@ -115,6 +119,7 @@ class Config:
         self.nvidia_server = args.nvidia_server
         self.nvidia_use_ssl = not args.nvidia_no_ssl
         self.sensitivity = max(1, min(10, args.sensitivity))
+        self.new_transcript = args.new
         self.log_file = args.log
 
 

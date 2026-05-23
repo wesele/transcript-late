@@ -1,5 +1,6 @@
 import sys
 import os
+from datetime import datetime
 from rich.console import Console
 from rich.panel import Panel
 from rich.text import Text
@@ -10,6 +11,24 @@ class ConsoleUI:
         self.console = Console()
         self.last_hypothesis_len = 0
         self.has_active_hypothesis = False
+        self.log_path = None
+
+    def _get_log_path(self):
+        if self.log_path:
+            return self.log_path
+        if config.log_file:
+            self.log_path = config.log_file
+            return self.log_path
+        date_str = datetime.now().strftime("%Y-%m-%d")
+        base = f"transcript_{date_str}"
+        path = f"{base}.md"
+        if config.new_transcript:
+            n = 1
+            while os.path.exists(path):
+                n += 1
+                path = f"{base}_{n}.md"
+        self.log_path = path
+        return self.log_path
 
     def print_startup_info(self):
         """Prints the system configuration card on startup."""
@@ -38,7 +57,7 @@ class ConsoleUI:
         config_text.append(f"{config.base_url}\n", style="white")
         
         config_text.append("📝  Session Log:    ", style="bold cyan")
-        config_text.append(f"{config.log_file}\n", style="white")
+        config_text.append(f"{self._get_log_path()}\n", style="white")
 
         config_text.append("🎛️  Sensitivity:    ", style="bold cyan")
         if config.stt_engine in ["google", "whisper-api", "whisper-local", "nvidia"]:
@@ -139,22 +158,19 @@ class ConsoleUI:
         self.console.print(f"[bold red]❌ Error: {message}[/bold red]")
 
     def _write_to_log(self, original, translation):
-        """Append the segment to the session Markdown log file."""
         try:
-            file_exists = os.path.exists(config.log_file)
-            with open(config.log_file, "a", encoding="utf-8") as f:
+            path = self._get_log_path()
+            now = datetime.now()
+            file_exists = os.path.exists(path)
+            with open(path, "a", encoding="utf-8") as f:
                 if not file_exists:
                     f.write(f"# RTA Translation Session Log\n")
                     f.write(f"- **Source Language**: {config.source_lang}\n")
                     f.write(f"- **Target Language**: {config.target_lang}\n")
                     f.write(f"- **Model**: {config.model}\n")
-                    f.write(f"- **Date**: {time_string()}\n\n---\n\n")
-                
-                f.write(f"**Original ({config.source_lang})**:\n> *{original}*\n\n")
-                f.write(f"**Translation ({config.target_lang})**:\n> **{translation}**\n\n---\n\n")
-        except Exception:
-            pass # Fail silently if unable to write log
+                    f.write(f"- **Date**: {now.strftime('%Y-%m-%d %H:%M:%S')}\n\n---\n\n")
 
-def time_string():
-    import datetime
-    return datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+                f.write(f"> **[ {now.strftime('%H:%M:%S')} ]** **{original}**\n")
+                f.write(f"> **[ {now.strftime('%H:%M:%S')} ]** *{translation}*\n\n---\n\n")
+        except Exception:
+            pass

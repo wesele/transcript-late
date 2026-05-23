@@ -14,5 +14,5 @@
     "nvidia_server": "grpc.nvcf.nvidia.com:443",
     "nvidia_use_ssl": true,
     "sensitivity": 5,
-    "log_file": "transcript.md"
+    "new_transcript": false
 }
