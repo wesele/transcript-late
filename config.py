@@ -50,7 +50,7 @@ _DEFAULTS = {
     "new_transcript": False,
     "merge_interval": 1.5,
     "translation_engine": "cloud-api",
-    "hy_mt_model": "tencent/Hy-MT2-1.8B",
+    "hy_mt_model": "tencent/Hy-MT2-1.8B-FP8",
     "log_file": None,
 }
 
