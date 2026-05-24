@@ -15,5 +15,7 @@
     "nvidia_use_ssl": true,
     "sensitivity": 8,
     "new_transcript": false,
-    "merge_interval": 1.5
+    "merge_interval": 1.5,
+    "translation_engine": "cloud-api",
+    "hy_mt_model": "tencent/Hy-MT2-1.8B"
 }

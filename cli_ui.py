@@ -53,7 +53,10 @@ class ConsoleUI:
         config_text.append(f"{config.source_lang} ➡️ {config.target_lang}\n", style="white")
         
         config_text.append("⚙️  Model Backend:  ", style="bold cyan")
-        config_text.append(f"{config.model}\n", style="white")
+        if config.translation_engine == "hy-mt-local":
+            config_text.append(f"Hy-MT2 (Local) [{config.hy_mt_model}]\n", style="white")
+        else:
+            config_text.append(f"{config.model}\n", style="white")
         
         config_text.append("🔗  API Endpoint:   ", style="bold cyan")
         config_text.append(f"{config.base_url}\n", style="white")

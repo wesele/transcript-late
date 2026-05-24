@@ -49,6 +49,8 @@ _DEFAULTS = {
     "sensitivity": 8,
     "new_transcript": False,
     "merge_interval": 1.5,
+    "translation_engine": "cloud-api",
+    "hy_mt_model": "tencent/Hy-MT2-1.8B",
     "log_file": None,
 }
 
@@ -98,6 +100,11 @@ class Config:
         parser.add_argument("--nvidia-server", type=str, default=self.nvidia_server)
         parser.add_argument("--nvidia-no-ssl", action="store_true")
         parser.add_argument("--sensitivity", type=int, default=self.sensitivity)
+        parser.add_argument("--tran-engine", type=str, default=self.translation_engine,
+                            choices=["cloud-api", "hy-mt-local"],
+                            help=f"Translation engine (default: {self.translation_engine})")
+        parser.add_argument("--hy-mt-model", type=str, default=self.hy_mt_model,
+                            help=f"Hy-MT model name/path (default: {self.hy_mt_model})")
         parser.add_argument("--merge-interval", type=float, default=self.merge_interval,
                             help="Seconds to wait before flushing merged segments (0 = disabled)")
         parser.add_argument("-n", "--new", action="store_true", default=self.new_transcript,
@@ -122,6 +129,8 @@ class Config:
         self.nvidia_server = args.nvidia_server
         self.nvidia_use_ssl = not args.nvidia_no_ssl
         self.sensitivity = max(1, min(10, args.sensitivity))
+        self.translation_engine = args.tran_engine
+        self.hy_mt_model = args.hy_mt_model
         self.new_transcript = args.new
         self.merge_interval = max(0.0, args.merge_interval)
         self.log_file = args.log
